@@ -235,21 +235,93 @@ DELETE `/post.txt` 또는 DELETE `/put.txt`는 파일 삭제 기능을 확인하
 
 ## 18. Client / WireShark 실행 결과
 
-GET `/index.html` 실행 결과, Client는 HTTP/1.1 형식의 GET Request를 전송하고 Server는 `index.html` 파일 내용을 포함하여 200 OK로 응답한다. 실행 결과 이미지는 `README/GET_OK.png`, 원본 패킷 파일은 `WireShark/GET_OK.pcapng`로 저장한다.
+### 18-1. GET `/index.html` -> 200 OK
 
-GET `/notfound.html` 실행 결과, 존재하지 않는 파일 요청에 대해 Server는 404 Not Found를 응답한다. 실행 결과 이미지는 `README/GET_NO.png`, 원본 패킷 파일은 `WireShark/GET_NO.pcapng`로 저장한다.
+GET `/index.html` 실행 결과, Client는 HTTP/1.1 형식의 GET Request를 전송하고 Server는 `index.html` 파일 내용을 포함하여 200 OK로 응답한다. 원본 패킷 파일은 `WireShark/GET_OK.pcapng`로 저장한다.
 
-HEAD `/index.html` 실행 결과, Server는 200 OK Header를 보내지만 Body를 전송하지 않는다. 실행 결과 이미지는 `README/HEAD.png`, 원본 패킷 파일은 `WireShark/HEAD.pcapng`로 저장한다.
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_GET_OK.png" width="430"> | <img src="README/GET_OK.png" width="430"> |
 
-POST `/post.txt` 첫 번째 실행 결과, Server는 `post.txt` 파일을 생성하고 201 Created를 응답한다. 실행 결과 이미지는 `README/POST_1.png`, 원본 패킷 파일은 `WireShark/POST_1.pcapng`로 저장한다.
+### 18-2. GET `/notfound.html` -> 404 Not Found
 
-POST `/post.txt` 두 번째 실행 결과, Server는 기존 `post.txt` 뒤에 Body를 append하고 200 OK를 응답한다. 실행 결과 이미지는 `README/POST_2.png`, 원본 패킷 파일은 `WireShark/POST_2.pcapng`로 저장한다.
+GET `/notfound.html` 실행 결과, 존재하지 않는 파일 요청에 대해 Server는 404 Not Found를 응답한다. 원본 패킷 파일은 `WireShark/GET_NO.pcapng`로 저장한다.
 
-PUT `/put.txt` 실행 결과, Server는 Body 내용으로 `put.txt`를 덮어쓰고 204 No Content를 응답한다. 실행 결과 이미지는 `README/PUT_OK.png`, 원본 패킷 파일은 `WireShark/PUT.pcapng`로 저장한다.
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_GET_NO.png" width="430"> | <img src="README/GET_NO.png" width="430"> |
 
-DELETE `/post.txt` 실행 결과, Server는 생성된 파일을 삭제하고 200 OK를 응답한다. 실행 결과 이미지는 `README/DELETE.png`, 원본 패킷 파일은 `WireShark/DELETE.pcapng`로 저장한다.
+### 18-3. HEAD `/index.html` -> 200 OK
 
-PATCH `/index.html` 실행 결과, 지원하지 않는 Method이므로 Server는 400 Bad Request를 응답한다. 실행 결과 이미지는 `README/BAD_REQUEST.png`, 원본 패킷 파일은 `WireShark/BAD_REQUEST.pcapng`로 저장한다.
+HEAD `/index.html` 실행 결과, Server는 200 OK Header를 보내지만 Body를 전송하지 않는다. 원본 패킷 파일은 `WireShark/HEAD.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_HEAD_OK.png" width="430"> | <img src="README/HEAD.png" width="430"> |
+
+### 18-4. HEAD `/missing.html` -> 404 Not Found
+
+HEAD `/missing.html` 실행 결과, 존재하지 않는 파일에 대한 HEAD 요청이므로 Server는 404 Not Found Header를 응답한다. HEAD Method의 특성상 Body는 전송하지 않는다. 원본 패킷 파일은 `WireShark/HEAD_NO.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_HEAD_NO.png" width="430"> | <img src="README/HEAD_NO.png" width="430"> |
+
+### 18-5. POST `/post.txt` -> 201 Created
+
+POST `/post.txt` 첫 번째 실행 결과, Server는 `post.txt` 파일을 생성하고 201 Created를 응답한다. 원본 패킷 파일은 `WireShark/POST_1.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_POST_1.png" width="430"> | <img src="README/POST_1.png" width="430"> |
+
+### 18-6. POST `/post.txt` -> 200 OK
+
+POST `/post.txt` 두 번째 실행 결과, Server는 기존 `post.txt` 뒤에 Body를 append하고 200 OK를 응답한다. 원본 패킷 파일은 `WireShark/POST_2.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_POST_2.png" width="430"> | <img src="README/POST_2.png" width="430"> |
+
+### 18-7. PUT `/put.txt` -> 204 No Content
+
+PUT `/put.txt` 실행 결과, Server는 Body 내용으로 `put.txt`를 덮어쓰고 204 No Content를 응답한다. 원본 패킷 파일은 `WireShark/PUT.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_PUT_OK.png" width="430"> | <img src="README/PUT_OK.png" width="430"> |
+
+### 18-8. PUT `/readonly.txt` -> 403 Forbidden
+
+PUT `/readonly.txt` 실행 결과, Server는 수정 금지 대상으로 가정한 파일을 변경하지 않고 403 Forbidden을 응답한다. 원본 패킷 파일은 `WireShark/PUT_403.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_PUT_403.png" width="430"> | <img src="README/PUT_403.png" width="430"> |
+
+### 18-9. DELETE `/post.txt` -> 200 OK
+
+DELETE `/post.txt` 실행 결과, Server는 생성된 파일을 삭제하고 200 OK를 응답한다. 원본 패킷 파일은 `WireShark/DELETE.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_DELETE_OK.png" width="430"> | <img src="README/DELETE.png" width="430"> |
+
+### 18-10. DELETE `/readonly.txt` -> 403 Forbidden
+
+DELETE `/readonly.txt` 실행 결과, Server는 삭제 금지 대상으로 가정한 파일을 삭제하지 않고 403 Forbidden을 응답한다. 원본 패킷 파일은 `WireShark/DELETE_403.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_DELETE_403.png" width="430"> | <img src="README/DELETE_403.png" width="430"> |
+
+### 18-11. PATCH `/index.html` -> 400 Bad Request
+
+PATCH `/index.html` 실행 결과, 지원하지 않는 Method이므로 Server는 400 Bad Request를 응답한다. 원본 패킷 파일은 `WireShark/BAD_REQUEST.pcapng`로 저장한다.
+
+| Client 실행 화면 | Wireshark 캡처 화면 |
+|---|---|
+| <img src="README/CLIENT_BAD_REQUEST.png" width="430"> | <img src="README/BAD_REQUEST.png" width="430"> |
 
 ## 19. Server 실행 결과
 
@@ -257,7 +329,7 @@ Server 실행 시 터미널에는 Listening 메시지가 출력되어 `127.0.0.1
 
 Client가 접속하면 Server는 Client 주소, 원본 Request 메시지, Parsed method, Parsed path, Parsed version, Header count, Body length, Response status를 출력한다.
 
-POST와 PUT 요청에서는 Body length가 0보다 크게 출력되어 본문 데이터가 Server에 정상 전달되었음을 확인할 수 있다. 각 요청 처리 후 Server는 `HTTP/1.1 200 OK`, `HTTP/1.1 201 Created`, `HTTP/1.1 204 No Content`, `HTTP/1.1 400 Bad Request` 같은 응답 상태를 출력한다.
+POST와 PUT 요청에서는 Body length가 0보다 크게 출력되어 본문 데이터가 Server에 정상 전달되었음을 확인할 수 있다. 각 요청 처리 후 Server는 `HTTP/1.1 200 OK`, `HTTP/1.1 201 Created`, `HTTP/1.1 204 No Content`, `HTTP/1.1 403 Forbidden`, `HTTP/1.1 400 Bad Request` 같은 응답 상태를 출력한다.
 
 Server 결과 화면은 `README/SERVER_RESULT.png`로 저장하여 Client/WireShark 결과와 함께 제출 자료에 포함할 수 있다.
 

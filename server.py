@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 def make_http_date() -> str:
     """HTTP Response의 Date 헤더에 들어갈 GMT 시간 문자열을 만든다."""
-    return dt.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+    return dt.datetime.now(dt.timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
 
 def guess_content_type(path: str) -> str:
