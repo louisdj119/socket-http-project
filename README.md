@@ -47,8 +47,10 @@ Client는 사용자가 입력한 Method와 Path를 바탕으로 HTTP/1.1 Request
 
 ```text
 socket_http_project/
+├── README/
+│   └── 실행 결과 PNG 캡처 파일 저장
 ├── WireShark/
-│   └── CAPTURE_GUIDE.md
+│   └── Wireshark pcapng 파일 저장
 ├── server.py
 ├── client.py
 ├── index.html
@@ -65,7 +67,7 @@ socket_http_project/
 
 `README.md`는 GitHub에서 확인할 수 있는 기본 설명 문서이다. `README.docx`와 `README.pdf`는 과제 제출용 상세 보고서이며, 10장 이상 분량의 설명을 포함한다.
 
-`WireShark/` 폴더는 선배 예시처럼 Wireshark 캡처 PNG를 저장하기 위한 폴더이다. 실제 캡처 이미지는 본인 PC에서 Wireshark로 직접 촬영한 뒤 `GET_OK.png`, `POST_1_CREATED.png`, `PUT_OK.png` 같은 이름으로 저장하면 된다.
+`README/` 폴더는 선배 예시처럼 실행 결과 PNG 캡처 이미지를 저장하기 위한 폴더이다. `WireShark/` 폴더는 Wireshark에서 저장한 `.pcapng` 원본 캡처 파일을 저장하기 위한 폴더이다.
 
 ## 6. TCP Socket 통신 흐름
 
@@ -231,44 +233,35 @@ PATCH `/index.html`처럼 지원하지 않는 Method가 들어오면 Server는 4
 
 DELETE `/post.txt` 또는 DELETE `/put.txt`는 파일 삭제 기능을 확인하기 위한 요청이다. 파일이 존재하면 삭제 후 200 OK를 응답하고, 파일이 없으면 404 Not Found를 응답한다. DELETE `/readonly.txt`는 삭제 금지 파일로 가정하여 403 Forbidden을 응답한다.
 
-## 18. Wireshark 캡처 방법
+## 18. Client / WireShark 실행 결과
 
-macOS에서 localhost 통신을 캡처할 때는 Wireshark에서 `lo0` 인터페이스를 선택한다. 캡처를 시작한 뒤 Client를 실행하고 요청을 전송한다. Display Filter에는 다음 값을 입력한다.
+GET `/index.html` 실행 결과, Client는 HTTP/1.1 형식의 GET Request를 전송하고 Server는 `index.html` 파일 내용을 포함하여 200 OK로 응답한다. 실행 결과 이미지는 `README/GET_OK.png`, 원본 패킷 파일은 `WireShark/GET_OK.pcapng`로 저장한다.
 
-```text
-tcp.port == 8080
-```
+GET `/notfound.html` 실행 결과, 존재하지 않는 파일 요청에 대해 Server는 404 Not Found를 응답한다. 실행 결과 이미지는 `README/GET_NO.png`, 원본 패킷 파일은 `WireShark/GET_NO.pcapng`로 저장한다.
 
-HTTP로 자동 표시되지 않으면 패킷을 우클릭하고 `Decode As...` 메뉴에서 TCP port 8080을 HTTP로 지정한다. 이후 패킷 상세 영역에서 Request Line, Header, Response Status Line을 확인할 수 있다.
+HEAD `/index.html` 실행 결과, Server는 200 OK Header를 보내지만 Body를 전송하지 않는다. 실행 결과 이미지는 `README/HEAD.png`, 원본 패킷 파일은 `WireShark/HEAD.pcapng`로 저장한다.
 
-### 보고서에 넣을 캡처 화면 목록
+POST `/post.txt` 첫 번째 실행 결과, Server는 `post.txt` 파일을 생성하고 201 Created를 응답한다. 실행 결과 이미지는 `README/POST_1.png`, 원본 패킷 파일은 `WireShark/POST_1.pcapng`로 저장한다.
 
-선배 예시처럼 GitHub의 `WireShark/` 폴더에는 Wireshark 캡처 PNG를 넣으면 된다. 캡처 이미지는 다른 사람 자료를 복사하지 말고, 본인 PC에서 직접 실행한 화면을 저장해야 한다.
+POST `/post.txt` 두 번째 실행 결과, Server는 기존 `post.txt` 뒤에 Body를 append하고 200 OK를 응답한다. 실행 결과 이미지는 `README/POST_2.png`, 원본 패킷 파일은 `WireShark/POST_2.pcapng`로 저장한다.
 
-| 파일명 | 캡처할 요청/응답 | 보고서에 쓸 설명 |
-|---|---|---|
-| `GET_OK.png` | `GET /index.html` → `HTTP/1.1 200 OK` | 정상 파일 요청 시 Server가 HTML 파일을 읽어 200 OK로 응답함 |
-| `GET_NO.png` | `GET /notfound.html` → `HTTP/1.1 404 Not Found` | 존재하지 않는 파일 요청에 대해 404 오류를 응답함 |
-| `HEAD_OK.png` | `HEAD /index.html` → `HTTP/1.1 200 OK` | HEAD 요청은 상태와 Header만 응답하고 Body를 보내지 않음 |
-| `POST_1_CREATED.png` | 첫 번째 `POST /post.txt` → `HTTP/1.1 201 Created` | 파일이 없을 때 Server가 새 파일을 생성함 |
-| `POST_2_OK.png` | 두 번째 `POST /post.txt` → `HTTP/1.1 200 OK` | 파일이 이미 있을 때 기존 내용 뒤에 Body를 append함 |
-| `GET_POST_RESULT.png` | `GET /post.txt` → `HTTP/1.1 200 OK` | POST 두 번의 결과가 파일에 누적되었음을 확인함 |
-| `PUT_OK.png` | `PUT /put.txt` → `HTTP/1.1 204 No Content` | PUT 요청으로 파일 내용을 덮어쓰고 Body 없는 성공 응답을 반환함 |
-| `GET_PUT_RESULT.png` | `GET /put.txt` → `HTTP/1.1 200 OK` | PUT으로 덮어쓴 파일 내용을 GET으로 확인함 |
-| `DELETE_OK.png` | `DELETE /post.txt` → `HTTP/1.1 200 OK` | 생성된 파일을 DELETE 요청으로 삭제함 |
-| `BAD_REQUEST.png` | `PATCH /index.html` → `HTTP/1.1 400 Bad Request` | 지원하지 않는 Method를 잘못된 요청으로 처리함 |
+PUT `/put.txt` 실행 결과, Server는 Body 내용으로 `put.txt`를 덮어쓰고 204 No Content를 응답한다. 실행 결과 이미지는 `README/PUT_OK.png`, 원본 패킷 파일은 `WireShark/PUT.pcapng`로 저장한다.
 
-각 캡처는 Wireshark 상단 패킷 목록에서 HTTP Method와 Status Code가 보이도록 찍는다. 가능하면 하단 상세 영역에서 `Hypertext Transfer Protocol` 또는 TCP payload에 Request Line/Status Line이 보이도록 선택한다.
+DELETE `/post.txt` 실행 결과, Server는 생성된 파일을 삭제하고 200 OK를 응답한다. 실행 결과 이미지는 `README/DELETE.png`, 원본 패킷 파일은 `WireShark/DELETE.pcapng`로 저장한다.
 
-## 19. 영상 녹화 시나리오
+PATCH `/index.html` 실행 결과, 지원하지 않는 Method이므로 Server는 400 Bad Request를 응답한다. 실행 결과 이미지는 `README/BAD_REQUEST.png`, 원본 패킷 파일은 `WireShark/BAD_REQUEST.pcapng`로 저장한다.
 
-영상은 5분 이상으로 녹화하고, 화면에 날짜가 보이도록 한다. 먼저 프로젝트 폴더와 `server.py`, `client.py`, `index.html`, `README.md` 파일을 보여준다. 다음으로 Server 터미널에서 `python3 server.py`를 실행한다.
+## 19. Server 실행 결과
 
-그 후 Client 터미널에서 `python3 client.py`를 여러 번 실행하면서 GET, POST, PUT, DELETE, PATCH 요청을 차례로 입력한다. HEAD는 과제 요구사항 확인용으로 짧게만 보여주고, 영상 설명은 파일 제어가 잘 보이는 GET/POST/PUT/DELETE에 집중한다. 각 요청마다 Client 화면에는 보낸 Request와 받은 Response가 출력되고, Server 화면에는 Client 주소, 원본 Request, 파싱된 Method/Path/Version, 응답 상태 코드가 출력된다.
+Server 실행 시 터미널에는 Listening 메시지가 출력되어 `127.0.0.1:8080`에서 Client 연결을 기다리는 상태임을 확인할 수 있다.
 
-마지막으로 Wireshark 화면에서 `tcp.port == 8080` 필터를 적용하고, GET, POST, PUT, DELETE 요청 패킷과 응답 패킷을 확인한다. POST와 PUT은 Body가 보이는지도 확인한다.
+Client가 접속하면 Server는 Client 주소, 원본 Request 메시지, Parsed method, Parsed path, Parsed version, Header count, Body length, Response status를 출력한다.
 
-## 20. 전체 결과 요약
+POST와 PUT 요청에서는 Body length가 0보다 크게 출력되어 본문 데이터가 Server에 정상 전달되었음을 확인할 수 있다. 각 요청 처리 후 Server는 `HTTP/1.1 200 OK`, `HTTP/1.1 201 Created`, `HTTP/1.1 204 No Content`, `HTTP/1.1 400 Bad Request` 같은 응답 상태를 출력한다.
+
+Server 결과 화면은 `README/SERVER_RESULT.png`로 저장하여 Client/WireShark 결과와 함께 제출 자료에 포함할 수 있다.
+
+## 20. 전체 실행 결과 요약
 
 본 프로그램은 Python TCP Socket을 직접 사용하여 HTTP 형식의 Request와 Response를 구현하였다. Server는 `bind()`, `listen()`, `accept()`, `recv()`, `sendall()`을 사용하고, Client는 사용자 입력을 바탕으로 HTTP Request 문자열을 직접 생성한다.
 
