@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+post.txt
+put.txt
+readonly.txt
+.DS_Store
