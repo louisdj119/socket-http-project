@@ -47,7 +47,7 @@ Client는 사용자가 입력한 Method와 Path를 바탕으로 HTTP/1.1 Request
 
 ```text
 socket_http_project/
-├── README/
+├── WireShark/
 │   └── CAPTURE_GUIDE.md
 ├── server.py
 ├── client.py
@@ -65,7 +65,7 @@ socket_http_project/
 
 `README.md`는 GitHub에서 확인할 수 있는 기본 설명 문서이다. `README.docx`와 `README.pdf`는 과제 제출용 상세 보고서이며, 10장 이상 분량의 설명을 포함한다.
 
-`README/` 폴더는 선배 예시처럼 Wireshark 캡처 PNG를 저장하기 위한 폴더이다. 실제 캡처 이미지는 본인 PC에서 Wireshark로 직접 촬영한 뒤 `GET_OK.png`, `POST_1_CREATED.png`, `PUT_OK.png` 같은 이름으로 저장하면 된다.
+`WireShark/` 폴더는 선배 예시처럼 Wireshark 캡처 PNG를 저장하기 위한 폴더이다. 실제 캡처 이미지는 본인 PC에서 Wireshark로 직접 촬영한 뒤 `GET_OK.png`, `POST_1_CREATED.png`, `PUT_OK.png` 같은 이름으로 저장하면 된다.
 
 ## 6. TCP Socket 통신 흐름
 
@@ -137,6 +137,27 @@ Body 내용
 
 `route_request()` 함수는 Method에 따라 GET, HEAD, POST, PUT, DELETE 처리 함수로 분기한다. 지원하지 않는 Method가 들어오면 400 Bad Request를 응답한다.
 
+### server.py 주요 함수별 상세 설명
+
+| 함수 | 설명 | 시연/캡처에서 보여줄 부분 |
+|---|---|---|
+| `make_http_date()` | HTTP Response Header의 `Date` 값을 GMT 형식으로 생성한다. | Response Header에 `Date:`가 들어간 화면 |
+| `guess_content_type()` | 요청 파일 확장자에 따라 `text/html`, `text/plain`을 선택한다. | GET `/index.html` 응답의 `Content-Type: text/html` |
+| `parse_http_request()` | Request Line을 파싱하여 Method, Path, Version을 분리하고 Header와 Body를 저장한다. | Server 터미널의 `Parsed method`, `Parsed path`, `Parsed version` |
+| `build_http_response()` | Status Line, Header, Blank Line, Body 구조로 HTTP Response를 직접 만든다. | Client 터미널의 전체 Response 출력 |
+| `safe_file_path()` | 요청 경로를 프로젝트 폴더 내부 파일로 변환하고 `../` 같은 상위 경로 접근을 막는다. | 파일 제어가 프로젝트 폴더 안에서만 일어나는 설명 |
+| `handle_get()` | 파일이 존재하면 200 OK와 파일 내용을 응답하고, 없으면 404 Not Found를 응답한다. | `GET /index.html`, `GET /notfound.html` |
+| `handle_head()` | GET과 같은 상태 판단을 하되 Body 없이 Header만 응답한다. | `HEAD /index.html` 응답에서 Body가 없는 화면 |
+| `handle_post()` | `/post.txt`가 없으면 생성 후 201 Created, 있으면 append 후 200 OK를 응답한다. | POST 첫 실행/두 번째 실행, 이후 GET `/post.txt` 결과 |
+| `handle_put()` | `/put.txt`를 Body 내용으로 덮어쓰고 204 No Content를 응답한다. | PUT 실행 후 Server 로그와 GET `/put.txt` 확인 |
+| `handle_delete()` | `/post.txt`, `/put.txt` 파일을 삭제하고, readonly 대상은 403 Forbidden으로 거부한다. | DELETE 성공 및 DELETE forbidden 화면 |
+| `receive_full_request()` | Header와 Body를 Content-Length 기준으로 끝까지 수신한다. | POST/PUT Body가 서버 로그에 정상 출력되는 화면 |
+| `run_server()` | TCP Server 실행, 연결 수락, 로그 출력, 응답 전송, KeyboardInterrupt 종료를 담당한다. | Server 시작 화면과 Ctrl+C 종료 화면 |
+
+Server 쪽에서 가장 강조할 부분은 **Client 주소, 원본 Request, 파싱 결과, Body 길이, Response status를 모두 출력한다는 점**이다. 영상에서 Server 터미널을 같이 보여주면 서버가 단순히 문자열을 보내는 것이 아니라 Request를 분석하고 처리한다는 점을 설명할 수 있다.
+
+POST와 PUT은 실제 파일 제어와 연결되어 있다. POST는 `post.txt`를 만들거나 기존 내용 뒤에 추가하고, PUT은 `put.txt` 내용을 새 Body로 덮어쓴다. DELETE는 생성된 파일을 삭제한다. 따라서 교수님이 강조한 백엔드 중심 처리와 파일 제어 조건을 만족한다.
+
 ## 11. client.py 코드 설명
 
 `client.py`는 사용자 입력을 받아 HTTP Request 문자열을 직접 만든다. 사용자는 Method와 Path를 입력하고, POST 또는 PUT인 경우 Body도 입력한다.
@@ -144,6 +165,23 @@ Body 내용
 `build_request()` 함수는 request line, header, blank line, body 순서로 메시지를 만든다. 이때 Content-Length는 Body를 UTF-8로 인코딩한 byte 길이를 계산하여 넣는다.
 
 `send_request()` 함수는 TCP 소켓을 생성하고 Server에 접속한다. 이후 `sendall()`로 Request를 보내고, `recv()`를 반복하여 Response 전체를 수신한다.
+
+### client.py 주요 흐름별 상세 설명
+
+| 단계 | 코드 동작 | 시연/캡처에서 보여줄 부분 |
+|---|---|---|
+| 1 | 사용자에게 Method를 입력받는다. | `Method 입력:` 화면 |
+| 2 | 사용자에게 Path를 입력받고 `/`가 없으면 자동으로 붙인다. | `/index.html`, `/post.txt`, `/put.txt` 입력 화면 |
+| 3 | POST 또는 PUT이면 Body를 추가로 입력받는다. | `Body 입력:` 화면 |
+| 4 | `build_request()`에서 HTTP/1.1 Request 문자열을 직접 만든다. | Client의 `[CLIENT] Sent Request` 출력 |
+| 5 | `Content-Length`를 Body byte 길이로 계산한다. | POST/PUT Request Header의 `Content-Length` |
+| 6 | TCP 소켓으로 `127.0.0.1:8080`에 연결한다. | Wireshark의 TCP handshake 및 HTTP request |
+| 7 | `sendall()`로 Request를 전송한다. | Wireshark의 GET/POST/PUT/DELETE 요청 패킷 |
+| 8 | `recv()`를 반복하여 Response 전체를 수신한다. | Client의 `[CLIENT] Received Response` 출력 |
+
+Client 설명에서는 **HTTP Request를 라이브러리가 아니라 문자열로 직접 구성했다는 점**을 강조하면 좋다. 특히 `GET /index.html HTTP/1.1`, `Host`, `User-Agent`, `Content-Type`, `Content-Length`, `Connection` Header가 Client 출력과 Wireshark에 동일하게 보인다는 점을 설명하면 된다.
+
+영상에서는 Client 터미널에서 보낸 Request와 받은 Response가 모두 출력되므로, 각 Method의 실행 결과를 빠르게 확인할 수 있다. POST/PUT처럼 Body가 있는 요청은 Request 하단에 Body 내용이 같이 출력되므로 파일 제어 결과 설명과 연결하기 좋다.
 
 ## 12. 실행 방법
 
@@ -202,6 +240,25 @@ tcp.port == 8080
 ```
 
 HTTP로 자동 표시되지 않으면 패킷을 우클릭하고 `Decode As...` 메뉴에서 TCP port 8080을 HTTP로 지정한다. 이후 패킷 상세 영역에서 Request Line, Header, Response Status Line을 확인할 수 있다.
+
+### 보고서에 넣을 캡처 화면 목록
+
+선배 예시처럼 GitHub의 `WireShark/` 폴더에는 Wireshark 캡처 PNG를 넣으면 된다. 캡처 이미지는 다른 사람 자료를 복사하지 말고, 본인 PC에서 직접 실행한 화면을 저장해야 한다.
+
+| 파일명 | 캡처할 요청/응답 | 보고서에 쓸 설명 |
+|---|---|---|
+| `GET_OK.png` | `GET /index.html` → `HTTP/1.1 200 OK` | 정상 파일 요청 시 Server가 HTML 파일을 읽어 200 OK로 응답함 |
+| `GET_NO.png` | `GET /notfound.html` → `HTTP/1.1 404 Not Found` | 존재하지 않는 파일 요청에 대해 404 오류를 응답함 |
+| `HEAD_OK.png` | `HEAD /index.html` → `HTTP/1.1 200 OK` | HEAD 요청은 상태와 Header만 응답하고 Body를 보내지 않음 |
+| `POST_1_CREATED.png` | 첫 번째 `POST /post.txt` → `HTTP/1.1 201 Created` | 파일이 없을 때 Server가 새 파일을 생성함 |
+| `POST_2_OK.png` | 두 번째 `POST /post.txt` → `HTTP/1.1 200 OK` | 파일이 이미 있을 때 기존 내용 뒤에 Body를 append함 |
+| `GET_POST_RESULT.png` | `GET /post.txt` → `HTTP/1.1 200 OK` | POST 두 번의 결과가 파일에 누적되었음을 확인함 |
+| `PUT_OK.png` | `PUT /put.txt` → `HTTP/1.1 204 No Content` | PUT 요청으로 파일 내용을 덮어쓰고 Body 없는 성공 응답을 반환함 |
+| `GET_PUT_RESULT.png` | `GET /put.txt` → `HTTP/1.1 200 OK` | PUT으로 덮어쓴 파일 내용을 GET으로 확인함 |
+| `DELETE_OK.png` | `DELETE /post.txt` → `HTTP/1.1 200 OK` | 생성된 파일을 DELETE 요청으로 삭제함 |
+| `BAD_REQUEST.png` | `PATCH /index.html` → `HTTP/1.1 400 Bad Request` | 지원하지 않는 Method를 잘못된 요청으로 처리함 |
+
+각 캡처는 Wireshark 상단 패킷 목록에서 HTTP Method와 Status Code가 보이도록 찍는다. 가능하면 하단 상세 영역에서 `Hypertext Transfer Protocol` 또는 TCP payload에 Request Line/Status Line이 보이도록 선택한다.
 
 ## 19. 영상 녹화 시나리오
 
